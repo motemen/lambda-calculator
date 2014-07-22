@@ -21,8 +21,8 @@ class TermSpec extends FlatSpec with Matchers {
     NamedApplication(NamedAbstraction(NamedVariable("a"), NamedVariable("b")), NamedApplication(NamedVariable("g"), NamedVariable("x"))).toString shouldBe "(λa.b) (g x)"
   }
 
-  "toUnnamed" should "work on λx.λy.(x y)" in {
-    NamedTerm.toUnnamed(
+  "removeNames" should "work on λx.λy.(x y)" in {
+    NamedTerm.removeNames(
       NamedAbstraction(NamedVariable("x"), NamedAbstraction(NamedVariable("y"), NamedApplication(NamedVariable("x"), NamedVariable("y"))))
     ) shouldBe Abstraction(Abstraction(Application(Variable(1, "x"), Variable(0, "y"))))
   }

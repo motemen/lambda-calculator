@@ -3,6 +3,21 @@ import org.scalatest._
 class EvaluatorSpec extends FlatSpec with Matchers {
   val idX = Abstraction(Variable(0, "x"))
 
+  "substitute" should "[1 :-> λ0]1 = λ0" in {
+    val term = Evaluator.substitute(Variable(1, ""), 1, Abstraction(Variable(0, "")))
+    term shouldBe Abstraction(Variable(0, ""))
+  }
+
+  it should "[2 :-> λ0]λ3 = λλ0" in {
+    val term = Evaluator.substitute(Abstraction(Variable(3, "")), 2, Abstraction(Variable(0, "")))
+    term shouldBe Abstraction(Abstraction(Variable(0, "")))
+  }
+
+  it should "[0 :-> 1]λ1 = λ2" in {
+    val term = Evaluator.substitute(Abstraction(Variable(1, "")), 0, Variable(1, ""))
+    term shouldBe Abstraction(Variable(2, ""))
+  }
+
   "step1" should "evaluate (λx.x)(λy.y) to λy.y" in {
     Evaluator.step1(
       Application(Abstraction(Variable(0, "x")), Abstraction(Variable(0, "y")))
@@ -40,7 +55,7 @@ class EvaluatorSpec extends FlatSpec with Matchers {
       NamedAbstraction(NamedVariable("x"), NamedVariable("x"))
     )
 
-    val term = NamedTerm.toUnnamed(namedTerm)
+    val term = NamedTerm.removeNames(namedTerm)
 
     term shouldBe Application(
       Abstraction(Abstraction(Abstraction(Application(Application(Variable(0, "z"), Variable(1, "y")), Variable(2, "x"))))),
@@ -55,7 +70,7 @@ class EvaluatorSpec extends FlatSpec with Matchers {
 
     namedTerm.toString shouldBe "(λx.λy.y (λz.x)) (λa.λb.a (b b))"
 
-    val term = NamedTerm.toUnnamed(namedTerm)
+    val term = NamedTerm.removeNames(namedTerm)
     term.toString shouldBe "(λλ0 (λ2)) (λλ1 (0 0))"
 
     val steppedTerm = Evaluator.step1(term)

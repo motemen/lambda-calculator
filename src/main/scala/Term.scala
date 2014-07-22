@@ -1,16 +1,18 @@
 object NamedTerm {
-  def toUnnamed(term: NamedTerm, context: Map[String,Int] = Map.empty): Term = {
+  type Context = List[String]
+
+  def removeNames(term: NamedTerm, context: Map[String,Int] = Map.empty): Term = {
     term match {
       case NamedVariable(name) => {
         Variable(context.get(name).get, name)
       }
 
       case NamedAbstraction(NamedVariable(name), body) => {
-        Abstraction(NamedTerm.toUnnamed(body, context.mapValues(_+1) + (name -> 0)))
+        Abstraction(NamedTerm.removeNames(body, context.mapValues(_+1) + (name -> 0)))
       }
 
       case NamedApplication(fun, arg) => {
-        Application(NamedTerm.toUnnamed(fun, context), NamedTerm.toUnnamed(arg, context))
+        Application(NamedTerm.removeNames(fun, context), NamedTerm.removeNames(arg, context))
       }
     }
   }
