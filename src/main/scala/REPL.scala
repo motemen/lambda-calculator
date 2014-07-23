@@ -15,7 +15,7 @@ object REPL {
     }
 
     while (true) {
-      val line = io.StdIn.readLine("λ> ")
+      val line = readLine("λ> ")
       Parser.parse(line) match {
         case Success(namedTerm, _) => {
           println(s"    $namedTerm")

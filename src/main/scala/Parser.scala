@@ -1,11 +1,15 @@
 import util.parsing.combinator._
 
+import scala.scalajs.js
+import js.annotation.JSExport
+
 /**
  * Syntax:
  *   term ::= variable
  *          | term term
  *          | '\' variable '.' term
  */
+@JSExport("lambda.Parser")
 object Parser extends RegexParsers with PackratParsers {
   lazy val variable: PackratParser[NamedVariable] = "[a-zA-Z][a-zA-Z0-9]*".r ^^ {
     case name => NamedVariable(name)
@@ -23,5 +27,6 @@ object Parser extends RegexParsers with PackratParsers {
 
   lazy val term: PackratParser[NamedTerm] = abstraction ||| application ||| variable ||| parenTerm
 
+  @JSExport
   def parse(input: String) = parseAll(term, input)
 }
