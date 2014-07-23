@@ -31,28 +31,35 @@ trait Evaluator {
     shift(substitute(body, 0, arg), -1, 0)
   }
 
-  def step1(term: Term): Term
+  def evaluate(term: Term): Term = {
+    step1(term) match {
+      case None       => term
+      case Some(term) => evaluate(term)
+    }
+  }
+
+  def step1(term: Term): Option[Term]
 }
 
 object CallByValueEvaluator extends Evaluator {
-  def step1(term: Term): Term = {
+  def step1(term: Term): Option[Term] = {
     term match {
       // E-AppAbs
       case Application(Abstraction(body), arg) if isValue(arg) => {
-        resolveApplication(body, arg)
+        Some(resolveApplication(body, arg))
       }
 
       // E-App2
       case Application(fun, arg) if isValue(fun) => {
-        Application(fun, step1(arg))
+        step1(arg).map(arg_ => Application(fun, arg_))
       }
 
       // E-App1
       case Application(fun, arg) => {
-        Application(step1(fun), arg)
+        step1(fun).map(fun_ => Application(fun_, arg))
       }
 
-      case _ => term
+      case _ => None
     }
   }
 }
