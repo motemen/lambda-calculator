@@ -1,3 +1,5 @@
+package net.tokyoenvious.lambdacalc
+
 trait Evaluator {
   def shift(term: Term, offset: Int, cutoff: Int): Term = {
     term match {

@@ -1,3 +1,5 @@
+package net.tokyoenvious.lambdacalc
+
 object NamedTerm {
   type Context = List[String]
 

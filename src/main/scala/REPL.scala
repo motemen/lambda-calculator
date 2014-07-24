@@ -1,3 +1,5 @@
+package net.tokyoenvious.lambdacalc
+
 import Parser._
 
 object REPL {

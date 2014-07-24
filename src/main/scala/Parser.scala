@@ -1,7 +1,6 @@
-import util.parsing.combinator._
+package net.tokyoenvious.lambdacalc
 
-import scala.scalajs.js
-import js.annotation.JSExport
+import util.parsing.combinator._
 
 /**
  * Syntax:
@@ -9,7 +8,6 @@ import js.annotation.JSExport
  *          | term term
  *          | '\' variable '.' term
  */
-@JSExport("lambda.Parser")
 object Parser extends RegexParsers with PackratParsers {
   lazy val variable: PackratParser[NamedVariable] = "[a-zA-Z][a-zA-Z0-9]*".r ^^ {
     case name => NamedVariable(name)
@@ -25,8 +23,9 @@ object Parser extends RegexParsers with PackratParsers {
 
   lazy val parenTerm: PackratParser[NamedTerm] = "(" ~> term <~ ")"
 
-  lazy val term: PackratParser[NamedTerm] = abstraction ||| application ||| variable ||| parenTerm
+  lazy val term: PackratParser[NamedTerm] =
+    abstraction ||| application ||| variable ||| parenTerm |
+      failure("expected '\\', '(' or variable")
 
-  @JSExport
-  def parse(input: String) = parseAll(term, input)
+  def parse(input: String): ParseResult[NamedTerm] = parseAll(term, input)
 }

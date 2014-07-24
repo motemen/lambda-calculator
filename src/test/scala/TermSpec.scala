@@ -1,3 +1,4 @@
+import net.tokyoenvious.lambdacalc._
 import org.scalatest._
 
 class TermSpec extends FlatSpec with Matchers {
