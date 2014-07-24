@@ -10,11 +10,25 @@ object NamedTerm {
       }
 
       case NamedAbstraction(NamedVariable(name), body) => {
-        Abstraction(NamedTerm.removeNames(body, context.mapValues(_+1) + (name -> 0)))
+        Abstraction(NamedTerm.removeNames(body, context.mapValues(_+1) + (name -> 0)), name)
       }
 
       case NamedApplication(fun, arg) => {
         Application(NamedTerm.removeNames(fun, context), NamedTerm.removeNames(arg, context))
+      }
+    }
+  }
+
+  def restoreNames(term: Term): NamedTerm = {
+    term match {
+      case Variable(i, name) => {
+        NamedVariable(name)
+      }
+      case Abstraction(body, argName) => {
+        NamedAbstraction(NamedVariable(argName), restoreNames(body))
+      }
+      case Application(fun, arg) => {
+        NamedApplication(restoreNames(fun), restoreNames(arg))
       }
     }
   }
@@ -49,7 +63,7 @@ case class Variable(index: Int, name: String) extends Term {
   override def toString = s"$index"
 }
 
-case class Abstraction(body: Term) extends Term {
+case class Abstraction(body: Term, argName: String = "") extends Term {
   override def toString = s"λ$body"
 }
 

@@ -6,7 +6,7 @@ trait Evaluator {
       case Variable(i, n) if i >= cutoff => Variable(i + offset, n)
       case Variable(_, _)                => term
       case Application(f, a) => Application(shift(f, offset, cutoff), shift(a, offset, cutoff))
-      case Abstraction(b)    => Abstraction(shift(b, offset + 1, cutoff + 1))
+      case Abstraction(b, n) => Abstraction(shift(b, offset + 1, cutoff + 1), n)
     }
   }
 
@@ -18,14 +18,14 @@ trait Evaluator {
       case Variable(i, _) if i == index => newTerm
       case Variable(_, _)               => term
       case Application(f, a) => Application(substitute(f, index, newTerm), substitute(a, index, newTerm))
-      case Abstraction(b)    => Abstraction(substitute(b, index + 1, shift(newTerm, 1, 0)))
+      case Abstraction(b, n) => Abstraction(substitute(b, index + 1, shift(newTerm, 1, 0)), n)
     }
   }
 
   def isValue(term: Term): Boolean = {
     term match {
-      case Abstraction(_) => true
-      case _              => false
+      case Abstraction(_, _) => true
+      case _                 => false
     }
   }
 
@@ -33,11 +33,15 @@ trait Evaluator {
     shift(substitute(body, 0, arg), -1, 0)
   }
 
-  def evaluate(term: Term): Term = {
-    step1(term) match {
-      case None       => term
-      case Some(term) => evaluate(term)
+  def evaluateStepped(term: Term): Seq[Term] = {
+    def next(term: Term = term, steps: Seq[Term] = Seq(term)): Seq[Term] = {
+      step1(term) match {
+        case None        => steps
+        case Some(term_) => next(term_, steps :+ term_)
+      }
     }
+
+    next()
   }
 
   def step1(term: Term): Option[Term]
@@ -47,7 +51,7 @@ object CallByValueEvaluator extends Evaluator {
   def step1(term: Term): Option[Term] = {
     term match {
       // E-AppAbs
-      case Application(Abstraction(body), arg) if isValue(arg) => {
+      case Application(Abstraction(body, _), arg) if isValue(arg) => {
         Some(resolveApplication(body, arg))
       }
 

@@ -25,6 +25,14 @@ class TermSpec extends FlatSpec with Matchers {
   "removeNames" should "work on λx.λy.(x y)" in {
     NamedTerm.removeNames(
       NamedAbstraction(NamedVariable("x"), NamedAbstraction(NamedVariable("y"), NamedApplication(NamedVariable("x"), NamedVariable("y"))))
-    ) shouldBe Abstraction(Abstraction(Application(Variable(1, "x"), Variable(0, "y"))))
+    ) shouldBe Abstraction(Abstraction(Application(Variable(1, "x"), Variable(0, "y")), "y"), "x")
   }
+
+  "remove/restoreNames" should "work on λx.λy.(x y)" in {
+    val term = NamedTerm.removeNames(
+      NamedAbstraction(NamedVariable("x"), NamedAbstraction(NamedVariable("y"), NamedApplication(NamedVariable("x"), NamedVariable("y"))))
+    )
+    println(NamedTerm.restoreNames(term))
+  }
+
 }
