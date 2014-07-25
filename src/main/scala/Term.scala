@@ -59,7 +59,7 @@ case class NamedApplication(fun: NamedTerm, arg: NamedTerm) extends NamedTerm {
 
 sealed trait Term
 
-case class Variable(index: Int, name: String) extends Term {
+case class Variable(index: Int, name: String = "") extends Term {
   override def toString = s"$index"
 }
 

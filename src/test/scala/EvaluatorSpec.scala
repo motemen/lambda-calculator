@@ -7,25 +7,25 @@ class EvaluatorSpec extends FunSuite with Matchers {
   }
 
   test ("[1 :-> λ0]1 = λ0") {
-    val term = Evaluator.substitute(Variable(1, ""), 1, Abstraction(Variable(0, ""), ""))
-    term shouldBe Abstraction(Variable(0, ""), "")
+    val term = Evaluator.substitute(Variable(1), 1, Abstraction(Variable(0)))
+    term shouldBe Abstraction(Variable(0))
   }
 
   test ("[2 :-> λ0]λ3 = λλ0") {
-    val term = Evaluator.substitute(Abstraction(Variable(3, ""), ""), 2, Abstraction(Variable(0, ""), ""))
-    term shouldBe Abstraction(Abstraction(Variable(0, ""), ""), "")
+    val term = Evaluator.substitute(Abstraction(Variable(3)), 2, Abstraction(Variable(0)))
+    term shouldBe Abstraction(Abstraction(Variable(0)))
   }
 
   test ("[0 :-> 1]λ1 = λ2") {
-    val term = Evaluator.substitute(Abstraction(Variable(1, ""), ""), 0, Variable(1, ""))
-    term shouldBe Abstraction(Variable(2, ""), "")
+    val term = Evaluator.substitute(Abstraction(Variable(1)), 0, Variable(1))
+    term shouldBe Abstraction(Variable(2))
   }
 
   test ("(λ.1 0 2)(λ.0) -> 0 (λ.0) 1") {
     Evaluator.resolveApplication(
-      Application(Application(Variable(1, ""), Variable(0, "")), Variable(2, "")),
-      Abstraction(Variable(0, ""), "")
-    ) shouldBe Application(Application(Variable(0, ""), Abstraction(Variable(0, ""))), Variable(1, ""))
+      Application(Application(Variable(1), Variable(0)), Variable(2)),
+      Abstraction(Variable(0))
+    ) shouldBe Application(Application(Variable(0), Abstraction(Variable(0))), Variable(1))
   }
 }
 
@@ -70,12 +70,12 @@ class CallByValueEvaluatorSpec extends FunSuite with Matchers {
     val term = NamedTerm.removeNames(namedTerm)
 
     term shouldBe Application(
-      Abstraction(Abstraction(Abstraction(Application(Application(Variable(0, "z"), Variable(1, "y")), Variable(2, "x"))))),
-      Abstraction(Variable(0, "x"))
+      Abstraction(Abstraction(Abstraction(Application(Application(Variable(0, "z"), Variable(1, "y")), Variable(2, "x")), "z"), "y"), "x"),
+      Abstraction(Variable(0, "x"), "x")
     )
 
     CallByValueEvaluator.step1(term) shouldBe Some(
-      Abstraction(Abstraction(Application(Application(Variable(0, "z"), Variable(1, "y")), Abstraction(Variable(0, "x"), "x")), "y"), "z")
+      Abstraction(Abstraction(Application(Application(Variable(0, "z"), Variable(1, "y")), Abstraction(Variable(0, "x"), "x")), "z"), "y")
     )
   }
 

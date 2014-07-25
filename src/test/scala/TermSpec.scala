@@ -29,10 +29,10 @@ class TermSpec extends FlatSpec with Matchers {
   }
 
   "remove/restoreNames" should "work on λx.λy.(x y)" in {
-    val term = NamedTerm.removeNames(
-      NamedAbstraction(NamedVariable("x"), NamedAbstraction(NamedVariable("y"), NamedApplication(NamedVariable("x"), NamedVariable("y"))))
-    )
-    println(NamedTerm.restoreNames(term))
-  }
+    val namedTerm = NamedAbstraction(NamedVariable("x"), NamedAbstraction(NamedVariable("y"), NamedApplication(NamedVariable("x"), NamedVariable("y"))))
 
+    val term = NamedTerm.removeNames(namedTerm)
+
+    NamedTerm.restoreNames(term) shouldBe namedTerm
+  }
 }
