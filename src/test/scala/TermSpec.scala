@@ -2,11 +2,11 @@ import net.tokyoenvious.lambdacalc._
 import org.scalatest._
 
 class TermSpec extends FlatSpec with Matchers {
-  "VariableTerm" should "stringify to term name" in {
+  "NamedVar" should "stringify to term name" in {
     NamedVar("xyz").toString shouldBe "xyz"
   }
 
-  "AbstractionTerm" should "stringify to λx.y" in {
+  "NamedAbs" should "stringify to λx.y" in {
     NamedAbs(NamedVar("x"), NamedVar("y")).toString shouldBe "λx.y"
   }
 
@@ -14,7 +14,7 @@ class TermSpec extends FlatSpec with Matchers {
     NamedAbs(NamedVar("x"), NamedApp(NamedVar("y"), NamedVar("z"))).toString shouldBe "λx.y z"
   }
 
-  "ApplicationTerm" should "stringify to f a" in {
+  "NamedApp" should "stringify to f a" in {
     NamedApp(NamedVar("f"), NamedVar("a")).toString shouldBe "f a"
   }
 

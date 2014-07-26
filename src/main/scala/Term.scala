@@ -53,7 +53,16 @@ case class NamedApp(fun: NamedTerm, arg: NamedTerm) extends NamedTerm {
       }
     }
 
-    s"${inner(fun)} ${inner(arg)}"
+    val funString = fun match {
+      case NamedAbs(_,_) => s"($fun)"
+      case _             => fun.toString
+    }
+    val argString = arg match {
+      case NamedVar(_) => arg.toString
+      case _           => s"($arg)"
+    }
+
+    s"$funString $argString"
   }
 }
 
