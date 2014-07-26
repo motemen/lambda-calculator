@@ -17,14 +17,15 @@ object Parser extends RegexParsers with PackratParsers {
     case (v ~ _ ~ b) => NamedAbstraction(v, b)
   }
 
-  lazy val application: PackratParser[NamedApplication] = term ~ term ^^ {
-    case (f ~ a) => NamedApplication(f, a)
+  lazy val application: PackratParser[NamedTerm] = rep1(abstraction | variable | parenTerm) ^^ {
+    case (t :: ts) => (t /: ts) { NamedApplication }
+    case _ => ??? // Could not occur
   }
 
   lazy val parenTerm: PackratParser[NamedTerm] = "(" ~> term <~ ")"
 
   lazy val term: PackratParser[NamedTerm] =
-    abstraction ||| application ||| variable ||| parenTerm |
+    abstraction | application | variable | parenTerm |
       failure("expected '\\', '(' or variable")
 
   def parse(input: String): ParseResult[NamedTerm] = parseAll(term, input)

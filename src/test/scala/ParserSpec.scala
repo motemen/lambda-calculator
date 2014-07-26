@@ -34,4 +34,14 @@ class ParserSpec extends FlatSpec with Matchers {
       NamedAbstraction(NamedVariable("p"), NamedApplication(NamedVariable("x1"), NamedApplication(NamedVariable("x2"), NamedVariable("x3"))))
     )
   }
+
+  it should "application associates in left" in {
+    val parsed = Parser.parse("""\x.\y.\z.x y z""")
+
+    parsed.get shouldBe
+       NamedAbstraction(NamedVariable("x"),
+         NamedAbstraction(NamedVariable("y"),
+           NamedAbstraction(NamedVariable("z"),
+            NamedApplication(NamedApplication(NamedVariable("x"), NamedVariable("y")), NamedVariable("z")))))
+  }
 }
