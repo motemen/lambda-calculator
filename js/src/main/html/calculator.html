@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html ng-app="LambdaCalculator">
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.min.js"></script>
+<script src="../../../target/scala-2.11/js-fastopt.js"></script>
+<script>
+angular.module('LambdaCalculator', [])
+  .controller('CalculatorCtrl', function ($scope) {
+    $scope.results = [];
+
+    this.evaluate = function () {
+      var terms = Calculator().parseAndEvaluateStepped($scope.stringInput);
+      $scope.results.push(terms);
+      $scope.stringInput = '';
+    };
+  })
+  .directive('lcFocus', function () {
+    return {
+      link: function (scope, element) {
+        element[0].focus();
+      }
+    };
+  });
+</script>
+<style>
+h1 {
+  font-family: Georgia;
+}
+
+body {
+  margin: 5% 20%;
+  font-size: 160%;
+  font-family: monospace;
+}
+
+input {
+  padding: 0.5em;
+  font-size: inherit;
+  font-family: inherit;
+  width: 100%;
+}
+
+#results .result {
+  margin-bottom: 2em;
+}
+
+ul.steps {
+  padding-left: 0;
+  margin-left: 0;
+  line-height: 1.6;
+  list-style: none;
+}
+
+ul.steps li::before {
+  color: #CCC;
+  content: "→";
+}
+
+ul.steps li:first-child::before {
+  visibility: hidden;
+}
+</style>
+</head>
+<body ng-controller="CalculatorCtrl as ctrl">
+<h1>Lambda Calculator</h1>
+<form ng-submit="ctrl.evaluate()">
+  <input ng-model="stringInput" lc-focus placeholder="(\p.\q.\r.p q r) (\x.\y.x)">
+</form>
+<div id="results">
+  <div class="result" ng-repeat="result in results.slice().reverse()">
+    <ul class="steps">
+      <li ng-repeat="term in result">
+        {{ term.toString() }}
+      </li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>

@@ -48,8 +48,8 @@ case class NamedApp(fun: NamedTerm, arg: NamedTerm) extends NamedTerm {
   override def toString = {
     def inner(term: NamedTerm): String = {
       term match {
-        case NamedVar(_) => term.toString
-        case _ => s"($term)"
+        case NamedAbs(_,_) => s"($term)"
+        case _             => term.toString
       }
     }
 
