@@ -3,10 +3,10 @@ package net.tokyoenvious.lambdacalc
 trait Evaluator {
   def shift(term: Term, offset: Int, cutoff: Int): Term = {
     term match {
-      case Variable(i, n) if i >= cutoff => Variable(i + offset, n)
-      case Variable(_, _)                => term
-      case Application(f, a) => Application(shift(f, offset, cutoff), shift(a, offset, cutoff))
-      case Abstraction(b, n) => Abstraction(shift(b, offset + 1, cutoff + 1), n)
+      case Var(i, n) if i >= cutoff => Var(i + offset, n)
+      case Var(_, _)                => term
+      case App(f, a) => App(shift(f, offset, cutoff), shift(a, offset, cutoff))
+      case Abs(b, n) => Abs(shift(b, offset + 1, cutoff + 1), n)
     }
   }
 
@@ -15,16 +15,16 @@ trait Evaluator {
    */
   def substitute(term: Term, index: Int, newTerm: Term): Term = {
     term match {
-      case Variable(i, _) if i == index => newTerm
-      case Variable(_, _)               => term
-      case Application(f, a) => Application(substitute(f, index, newTerm), substitute(a, index, newTerm))
-      case Abstraction(b, n) => Abstraction(substitute(b, index + 1, shift(newTerm, 1, 0)), n)
+      case Var(i, _) if i == index => newTerm
+      case Var(_, _)               => term
+      case App(f, a) => App(substitute(f, index, newTerm), substitute(a, index, newTerm))
+      case Abs(b, n) => Abs(substitute(b, index + 1, shift(newTerm, 1, 0)), n)
     }
   }
 
   def isValue(term: Term): Boolean = {
     term match {
-      case Abstraction(_, _) => true
+      case Abs(_, _) => true
       case _                 => false
     }
   }
@@ -51,18 +51,18 @@ object CallByValueEvaluator extends Evaluator {
   def step1(term: Term): Option[Term] = {
     term match {
       // E-AppAbs
-      case Application(Abstraction(body, _), arg) if isValue(arg) => {
+      case App(Abs(body, _), arg) if isValue(arg) => {
         Some(resolveApplication(body, arg))
       }
 
       // E-App2
-      case Application(fun, arg) if isValue(fun) => {
-        step1(arg).map(arg_ => Application(fun, arg_))
+      case App(fun, arg) if isValue(fun) => {
+        step1(arg).map(arg_ => App(fun, arg_))
       }
 
       // E-App1
-      case Application(fun, arg) => {
-        step1(fun).map(fun_ => Application(fun_, arg))
+      case App(fun, arg) => {
+        step1(fun).map(fun_ => App(fun_, arg))
       }
 
       case _ => None

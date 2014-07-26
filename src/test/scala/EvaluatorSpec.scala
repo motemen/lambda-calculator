@@ -7,53 +7,53 @@ class EvaluatorSpec extends FunSuite with Matchers {
   }
 
   test ("[1 :-> λ0]1 = λ0") {
-    val term = Evaluator.substitute(Variable(1), 1, Abstraction(Variable(0)))
-    term shouldBe Abstraction(Variable(0))
+    val term = Evaluator.substitute(Var(1), 1, Abs(Var(0)))
+    term shouldBe Abs(Var(0))
   }
 
   test ("[2 :-> λ0]λ3 = λλ0") {
-    val term = Evaluator.substitute(Abstraction(Variable(3)), 2, Abstraction(Variable(0)))
-    term shouldBe Abstraction(Abstraction(Variable(0)))
+    val term = Evaluator.substitute(Abs(Var(3)), 2, Abs(Var(0)))
+    term shouldBe Abs(Abs(Var(0)))
   }
 
   test ("[0 :-> 1]λ1 = λ2") {
-    val term = Evaluator.substitute(Abstraction(Variable(1)), 0, Variable(1))
-    term shouldBe Abstraction(Variable(2))
+    val term = Evaluator.substitute(Abs(Var(1)), 0, Var(1))
+    term shouldBe Abs(Var(2))
   }
 
   test ("(λ.1 0 2)(λ.0) -> 0 (λ.0) 1") {
     Evaluator.resolveApplication(
-      Application(Application(Variable(1), Variable(0)), Variable(2)),
-      Abstraction(Variable(0))
-    ) shouldBe Application(Application(Variable(0), Abstraction(Variable(0))), Variable(1))
+      App(App(Var(1), Var(0)), Var(2)),
+      Abs(Var(0))
+    ) shouldBe App(App(Var(0), Abs(Var(0))), Var(1))
   }
 }
 
 class CallByValueEvaluatorSpec extends FunSuite with Matchers {
   test ("(λx.x)(λy.y) -> λy.y") {
     CallByValueEvaluator.step1(
-      Application(Abstraction(Variable(0, "x")), Abstraction(Variable(0, "y")))
-    ) shouldBe Some(Abstraction(Variable(0, "y")))
+      App(Abs(Var(0, "x")), Abs(Var(0, "y")))
+    ) shouldBe Some(Abs(Var(0, "y")))
   }
 
   test ("(λx.λy.y x)(λy.y) -> λy.y λy'. y'") {
     CallByValueEvaluator.step1(
-      Application(
-        Abstraction(Abstraction(Application(Variable(0, "y"), Variable(1, "x")))),
-        Abstraction(Variable(0, "y"))
+      App(
+        Abs(Abs(App(Var(0, "y"), Var(1, "x")))),
+        Abs(Var(0, "y"))
       )
-    ) shouldBe Some(Abstraction(
-      Application(
-        Variable(0, "y"),
-        Abstraction(Variable(0, "y"))
+    ) shouldBe Some(Abs(
+      App(
+        Var(0, "y"),
+        Abs(Var(0, "y"))
       )
     ))
   }
 
   test ("(λx.x x)(λx.x x) -> itself") {
-    val omega = Application(
-      Abstraction(Application(Variable(0, "x"), Variable(0, "x"))),
-      Abstraction(Application(Variable(0, "x"), Variable(0, "x")))
+    val omega = App(
+      Abs(App(Var(0, "x"), Var(0, "x"))),
+      Abs(App(Var(0, "x"), Var(0, "x")))
     )
 
     CallByValueEvaluator.step1(omega) shouldBe Some(omega)
@@ -62,20 +62,20 @@ class CallByValueEvaluatorSpec extends FunSuite with Matchers {
   test ("(λx.λy.λz.(z y) x)(λx.x) -> λy.λz.z y (λx.x)") {
     val namedTerm = Parser.parse("""(\x.\y.\z.(z y) x)(\x.x)""").get
 
-    namedTerm shouldBe NamedApplication(
-      NamedAbstraction(NamedVariable("x"), NamedAbstraction(NamedVariable("y"), NamedAbstraction(NamedVariable("z"), NamedApplication(NamedApplication(NamedVariable("z"), NamedVariable("y")), NamedVariable("x"))))),
-      NamedAbstraction(NamedVariable("x"), NamedVariable("x"))
+    namedTerm shouldBe NamedApp(
+      NamedAbs(NamedVar("x"), NamedAbs(NamedVar("y"), NamedAbs(NamedVar("z"), NamedApp(NamedApp(NamedVar("z"), NamedVar("y")), NamedVar("x"))))),
+      NamedAbs(NamedVar("x"), NamedVar("x"))
     )
 
     val term = NamedTerm.removeNames(namedTerm)
 
-    term shouldBe Application(
-      Abstraction(Abstraction(Abstraction(Application(Application(Variable(0, "z"), Variable(1, "y")), Variable(2, "x")), "z"), "y"), "x"),
-      Abstraction(Variable(0, "x"), "x")
+    term shouldBe App(
+      Abs(Abs(Abs(App(App(Var(0, "z"), Var(1, "y")), Var(2, "x")), "z"), "y"), "x"),
+      Abs(Var(0, "x"), "x")
     )
 
     CallByValueEvaluator.step1(term) shouldBe Some(
-      Abstraction(Abstraction(Application(Application(Variable(0, "z"), Variable(1, "y")), Abstraction(Variable(0, "x"), "x")), "z"), "y")
+      Abs(Abs(App(App(Var(0, "z"), Var(1, "y")), Abs(Var(0, "x"), "x")), "z"), "y")
     )
   }
 

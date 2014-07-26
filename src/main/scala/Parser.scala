@@ -9,16 +9,16 @@ import util.parsing.combinator._
  *          | '\' variable '.' term
  */
 object Parser extends RegexParsers with PackratParsers {
-  lazy val variable: PackratParser[NamedVariable] = "[a-zA-Z][a-zA-Z0-9]*".r ^^ {
-    case name => NamedVariable(name)
+  lazy val variable: PackratParser[NamedVar] = "[a-zA-Z][a-zA-Z0-9]*".r ^^ {
+    case name => NamedVar(name)
   }
 
-  lazy val abstraction: PackratParser[NamedAbstraction] = "\\" ~> variable ~ "." ~ term ^^ {
-    case (v ~ _ ~ b) => NamedAbstraction(v, b)
+  lazy val abstraction: PackratParser[NamedAbs] = "\\" ~> variable ~ "." ~ term ^^ {
+    case (v ~ _ ~ b) => NamedAbs(v, b)
   }
 
   lazy val application: PackratParser[NamedTerm] = rep1(abstraction | variable | parenTerm) ^^ {
-    case (t :: ts) => (t /: ts) { NamedApplication }
+    case (t :: ts) => (t /: ts) { NamedApp }
     case _ => ??? // Could not occur
   }
 

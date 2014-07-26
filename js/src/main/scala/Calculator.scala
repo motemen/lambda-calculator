@@ -10,7 +10,7 @@ object Calculator {
     Parser.parse(input) match {
       case Parser.Success(namedTerm, _) => {
         val term = NamedTerm.removeNames(namedTerm)
-        scalajs.js.Array(CallByValueEvaluator.evaluateStepped(term).map(NamedTerm.restoreNames(_)): _*)
+        scalajs.js.Array(CallByValueEvaluator.evaluateStepped(term).map(NamedTerm.restoreNames): _*)
       }
       case Parser.NoSuccess(msg, _) => {
         throw new scalajs.js.JavaScriptException(msg)
