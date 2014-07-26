@@ -20,6 +20,27 @@ angular.module('LambdaCalculator', [])
         element[0].focus();
       }
     };
+  })
+  .directive('lcShowTerm', function () {
+    return {
+      scope: {
+        lcShowTerm: '&'
+      },
+      link: function (scope, element, attrs) {
+        function build (term, e) {
+          if (term instanceof Array) {
+            var e_ = angular.element('<span class="term-part"></span>');
+            e.append(e_);
+            term.forEach(function (t) { build(t, e_) });
+          } else {
+            e.append(document.createTextNode(term));
+          }
+        }
+
+        var term = scope.lcShowTerm();
+        build(term, element);
+      }
+    };
   });
 </script>
 <style>
@@ -54,6 +75,7 @@ ul.steps {
 ul.steps li::before {
   color: #CCC;
   content: "→";
+  margin-right: 0.5em;
 }
 
 ul.steps li:first-child::before {
@@ -69,9 +91,7 @@ ul.steps li:first-child::before {
 <div id="results">
   <div class="result" ng-repeat="result in results.slice().reverse()">
     <ul class="steps">
-      <li ng-repeat="term in result">
-        {{ term.toString() }}
-      </li>
+      <li ng-repeat="term in result" lc-show-term="term"></li>
     </ul>
   </div>
 </div>

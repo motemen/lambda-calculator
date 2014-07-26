@@ -34,35 +34,32 @@ object NamedTerm {
   }
 }
 
-sealed trait NamedTerm
+sealed trait NamedTerm {
+  override def toString = toStringPresentation.toString
+  def toStringPresentation: StringPresentation
+}
 
 case class NamedVar(name: String) extends NamedTerm {
-  override def toString = name
+  override def toStringPresentation = AsIs(name)
 }
 
 case class NamedAbs(arg: NamedVar, body: NamedTerm) extends NamedTerm {
-  override def toString = s"λ$arg.$body"
+  override def toStringPresentation =
+    Concat(Seq(AsIs("λ"), arg.toStringPresentation, AsIs("."), body.toStringPresentation))
 }
 
 case class NamedApp(fun: NamedTerm, arg: NamedTerm) extends NamedTerm {
-  override def toString = {
-    def inner(term: NamedTerm): String = {
-      term match {
-        case NamedAbs(_,_) => s"($term)"
-        case _             => term.toString
-      }
+  override def toStringPresentation = {
+    val funPresentation = fun match {
+      case NamedAbs(_,_) => Parenthesized(fun.toStringPresentation)
+      case _             => fun.toStringPresentation
+    }
+    val argPresentation = arg match {
+      case NamedVar(_) => arg.toStringPresentation
+      case _           => Parenthesized(arg.toStringPresentation)
     }
 
-    val funString = fun match {
-      case NamedAbs(_,_) => s"($fun)"
-      case _             => fun.toString
-    }
-    val argString = arg match {
-      case NamedVar(_) => arg.toString
-      case _           => s"($arg)"
-    }
-
-    s"$funString $argString"
+    Concat(Seq(funPresentation, AsIs(" "), argPresentation))
   }
 }
 
@@ -87,4 +84,16 @@ case class App(fun: Term, arg: Term) extends Term {
 
     s"${inner(fun)} ${inner(arg)}"
   }
+}
+
+sealed trait StringPresentation
+
+case class AsIs(s: String) extends StringPresentation {
+  override def toString = s
+}
+case class Concat(ss: Seq[StringPresentation]) extends StringPresentation {
+  override def toString = ss.mkString("")
+}
+case class Parenthesized(s: StringPresentation) extends StringPresentation {
+  override def toString = s"($s)"
 }
