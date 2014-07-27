@@ -7,7 +7,7 @@
 <script>
 angular.module('LambdaCalculator', [])
   .controller('CalculatorCtrl', function ($scope) {
-    $scope.results = [];
+    $scope.sessions = [];
 
     this.tryParsing = function () {
       $scope.parseError = null;
@@ -23,18 +23,18 @@ angular.module('LambdaCalculator', [])
 
     this.evaluate = function () {
       var term = Calculator().parse($scope.stringInput);
-      var result = { input: $scope.stringInput, terms: [ term ] };
-      $scope.results.push(result);
+      var session = { input: $scope.stringInput, terms: [ term ] };
+      $scope.sessions.push(session);
       $scope.stringInput = '';
     };
 
-    this.stepNext = function (result) {
-      var e = Calculator().evaluate1(result.terms[result.terms.length - 1]);
+    this.stepNext = function (session) {
+      var e = Calculator().evaluate1(session.terms[session.terms.length - 1]);
       if (e) {
-        result.terms[result.terms.length - 1] = e.prev;
-        result.terms.push(e.next);
+        session.terms[session.terms.length - 1] = e.prev;
+        session.terms.push(e.next);
       } else {
-        result.atEnd = true;
+        session.atEnd = true;
       }
     };
 
@@ -126,7 +126,7 @@ header {
   width: 60%;
 }
 
-#results .result {
+#sessions .session {
   margin-bottom: 2em;
   position: relative;
 }
@@ -173,15 +173,15 @@ a.permalink {
     <form ng-submit="ctrl.evaluate()">
       <input id="term-input" ng-model="stringInput" ng-keyup="ctrl.tryParsing()" lc-focus ng-class="{error: !!parseError}" placeholder="(\p.\q.\r.p q r) (\x.\y.x) (\A.A) (\B.B)">
     </form>
-    <div id="results">
-      <div class="result" ng-repeat="result in results.slice().reverse()">
+    <div id="sessions">
+      <div class="session" ng-repeat="session in sessions.slice().reverse()">
         <ul class="steps">
-          <li class="raw-input">{{result.input}}</li>
-          <li ng-repeat="term in result.terms" lc-show-term="term"></li>
-          <li ng-if="!result.atEnd"><button ng-click="ctrl.stepNext(result)" class="step-next">Step next</button></li>
+          <li class="raw-input">{{session.input}}</li>
+          <li ng-repeat="term in session.terms" lc-show-term="term"></li>
+          <li ng-if="!session.atEnd"><button ng-click="ctrl.stepNext(session)" class="step-next" lc-focus>Step next</button></li>
         </ul>
 
-        <a class="permalink" href="#{{result.input}}" title="Link to this evaluation">#</a>
+        <a class="permalink" href="#{{session.input}}" title="Link to this evaluation">#</a>
       </div>
     </div>
   </section>
