@@ -33,33 +33,32 @@ trait Evaluator {
     shift(substitute(body, 0, arg), -1, 0)
   }
 
-  type Focus = Seq[Int]
-  type EvaluationStep = List[(Term,Option[Focus])]
+  type EvaluationStep = List[(Term,Option[Seq[Int]])]
 
   def evaluateSteppedWithFocus(term: Term): EvaluationStep = {
-    def next(term: Term = term, step: EvaluationStep = List()): EvaluationStep = {
+    def next(term: Term, step: EvaluationStep): EvaluationStep = {
       step1(term) match {
         case None => (term, None) :: step
         case Some((term_, focus)) => next(term_, (term, Some(focus)) :: step)
       }
     }
 
-    next().reverse
+    next(term, List()).reverse
   }
 
   def evaluateStepped(term: Term): List[Term] = {
     evaluateSteppedWithFocus(term).map(_._1)
   }
 
-  def step1(term: Term): Option[(Term,Focus)]
+  def step1(term: Term): Option[(Term,Seq[Int])]
 }
 
 object CallByValueEvaluator extends Evaluator {
-  def step1(term: Term): Option[(Term,Focus)] = {
+  def step1(term: Term): Option[(Term,Seq[Int])] = {
     term match {
       // E-AppAbs
       case App(Abs(body, _), arg) if isValue(arg) => {
-        Some( resolveApplication(body, arg), Seq(0) )
+        Some((resolveApplication(body, arg), Seq(0)))
       }
 
       // E-App2
