@@ -13,7 +13,7 @@ object Calculator {
       case Parenthesized(s) =>
         scalajs.js.Array("(", displayAsJs(s), ")")
       case Focused(s) =>
-        scalajs.js.Dynamic.literal("focused" -> true, "content" -> displayAsJs(s))
+        scalajs.js.Dynamic.literal("reduced" -> true, "content" -> displayAsJs(s))
     }  
   }
   

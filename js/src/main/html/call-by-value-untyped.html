@@ -11,9 +11,14 @@ angular.module('LambdaCalculator', [])
 
     this.evaluate = function () {
       var terms = Calculator().parseAndEvaluateStepped($scope.stringInput);
-      $scope.results.push(terms);
+      $scope.results.push({ input: $scope.stringInput, terms: terms });
       $scope.stringInput = '';
     };
+
+    if (location.hash.length) {
+      $scope.stringInput = location.hash.replace(/^#/, '');
+      this.evaluate();
+    }
   })
   .directive('lcFocus', function () {
     return {
@@ -33,10 +38,10 @@ angular.module('LambdaCalculator', [])
             var e_ = angular.element('<span class="term-part"></span>');
             e.append(e_);
             term.forEach(function (t) { build(t, e_) });
-          } else if (term.focused) {
-            var e_ = angular.element('<span class="term-focused"></span>');
+          } else if (term.reduced) {
+            var e_ = angular.element('<span class="term-reduced"></span>');
             e.append(e_);
-            term.content.forEach(function (t) { build(t, e_) });
+            build(term.content, e_);
           } else {
             e.append(document.createTextNode(term));
           }
@@ -91,12 +96,13 @@ header {
 
 #results .result {
   margin-bottom: 2em;
+  position: relative;
 }
 
 ul.steps {
   padding-left: 0;
   margin-left: 0;
-  line-height: 1.8;
+  line-height: 1.9;
   list-style: none;
 }
 
@@ -106,12 +112,22 @@ ul.steps li::before {
   margin-right: 0.5em;
 }
 
+ul.steps li:nth-child(2)::before {
+  content: "=";
+}
+
 ul.steps li:first-child::before {
   visibility: hidden;
 }
 
-.term-focused {
-  border-bottom: 4px solid #FF8;
+.term-reduced {
+  border-bottom: 4px solid #FF3;
+}
+
+a.permalink {
+  text-decoration: none;
+  position: absolute;
+  right: 0;
 }
 </style>
 </head>
@@ -119,7 +135,7 @@ ul.steps li:first-child::before {
 <div id="container">
   <header>
     <h1>Lambda Calculator</h1>
-    <small>Strategy: Call-By-Value</small>
+    <small>Call-By-Value, Untyped</small>
   </header>
   <section id="content">
     <form ng-submit="ctrl.evaluate()">
@@ -127,8 +143,10 @@ ul.steps li:first-child::before {
     </form>
     <div id="results">
       <div class="result" ng-repeat="result in results.slice().reverse()">
+        <a class="permalink" href="#{{result.input}}" title="Link to this evaluation">#</a>
         <ul class="steps">
-          <li ng-repeat="term in result" lc-show-term="term"></li>
+          <li class="raw-input">{{result.input}}</li>
+          <li ng-repeat="term in result.terms" lc-show-term="term"></li>
         </ul>
       </div>
     </div>

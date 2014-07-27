@@ -59,12 +59,12 @@ object CallByValueEvaluator extends Evaluator {
 
       // E-App2
       case App(fun, arg) if isValue(fun) => {
-        step1(arg).map { case (arg_, focus) => ( App(fun, arg_), focus :+ 1 ) }
+        step1(arg).map { case (arg_, focus) => ( App(fun, arg_), 1 +: focus ) }
       }
 
       // E-App1
       case App(fun, arg) => {
-        step1(fun).map { case (fun_, focus) => ( App(fun_, arg), focus :+ 0 ) }
+        step1(fun).map { case (fun_, focus) => ( App(fun_, arg), 0 +: focus ) }
       }
 
       case _ => None

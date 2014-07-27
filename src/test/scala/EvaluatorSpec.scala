@@ -90,4 +90,11 @@ class CallByValueEvaluatorSpec extends FunSuite with Matchers {
     val steppedTerm = CallByValueEvaluator.step1(term).map(_._1)
     steppedTerm.get.toString shouldBe "λ0 (λλλ1 (0 0))"
   }
+
+  test ("(λx.x) ((λy.y) (λz.z)) -> (λx.x) (λz.z)") {
+    val term = App(Abs(Var(0, "x")), App(Abs(Var(0, "y")), Abs(Var(0, "z"))))
+    val step = CallByValueEvaluator.step1(term).get
+    step._1 shouldBe App(Abs(Var(0, "x")), Abs(Var(0, "z")))
+    step._2 shouldBe Seq(1, 0)
+  }
 }

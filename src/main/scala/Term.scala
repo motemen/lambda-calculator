@@ -118,7 +118,7 @@ trait Displayable { self =>
   def toDisplay(focus: Seq[Int] = Seq()): Display = {
     val sp = buildDisplay((s: Displayable, i: Int) => s.toDisplay(subFocus(focus, i)))
     focus match {
-      case Seq(0) => Focused(sp)
+      case Seq(_) => Focused(sp)
       case _      => sp
     }
   }
