@@ -1,12 +1,20 @@
 package net.tokyoenvious.lambdacalc
 
 object NamedTerm {
-  type Context = List[String]
+  type Context = Map[String,Int]
 
-  def removeNames(term: NamedTerm, context: Map[String,Int] = Map.empty): Term = {
+  case class UnboundVariableFound(variableName: String) extends Exception {
+    override def toString: String = s"Unbound variable found: $variableName"
+  }
+
+  def removeNames(term: NamedTerm, context: Context = Map.empty): Term = {
     term match {
       case NamedVar(name) => {
-        Var(context.get(name).get, name)
+        if (!context.isDefinedAt(name)) {
+          throw UnboundVariableFound(name)
+        }
+
+        Var(context(name), name)
       }
 
       case NamedAbs(NamedVar(name), body) => {

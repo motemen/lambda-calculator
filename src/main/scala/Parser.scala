@@ -13,6 +13,7 @@ object Parser extends RegexParsers with PackratParsers {
 
   lazy val application: PackratParser[NamedTerm] = rep1(abstraction | variable | parenTerm) ^^ {
     case (t :: ts) => (t /: ts) { NamedApp }
+    case _ => ??? // Could not happen
   }
 
   lazy val parenTerm: PackratParser[NamedTerm] = "(" ~> term <~ ")"

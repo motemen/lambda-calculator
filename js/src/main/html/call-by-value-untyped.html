@@ -9,8 +9,21 @@ angular.module('LambdaCalculator', [])
   .controller('CalculatorCtrl', function ($scope) {
     $scope.results = [];
 
+    this.tryParsing = function () {
+      $scope.parseError = null;
+
+      if (!$scope.stringInput) return;
+
+      try {
+        Calculator().parse($scope.stringInput);
+      } catch (e) {
+        $scope.parseError = e;
+      }
+    };
+
     this.evaluate = function () {
-      var terms = Calculator().parseAndEvaluateStepped($scope.stringInput);
+      var term = Calculator().parse($scope.stringInput);
+      var terms = Calculator().evaluationSteps(term);
       $scope.results.push({ input: $scope.stringInput, terms: terms });
       $scope.stringInput = '';
     };
@@ -63,25 +76,32 @@ body {
   font-family: monospace;
 }
 
-input {
+input#term-input {
   padding: 0.5em;
   font-size: inherit;
   font-family: inherit;
   width: 100%;
 }
 
-input {
+input#term-input {
   border: none;
   border-bottom: 2px solid #CCC;
   outline: none;
 }
 
-input:focus {
+input#term-input:focus {
   border-bottom-color: #888;
+}
+
+input#term-input.error {
+  border-bottom-color: #F77;
 }
 
 small {
   color: #999;
+  font-size: 14pt;
+  font-family: "Helvetica Neue", sans-serif;
+  font-weight: normal;
 }
 
 header {
@@ -134,12 +154,11 @@ a.permalink {
 <body ng-controller="CalculatorCtrl as ctrl">
 <div id="container">
   <header>
-    <h1>Lambda Calculator</h1>
-    <small>Call-By-Value, Untyped</small>
+    <h1>Lambda Calculator <small>Call-By-Value, Untyped</small></h1>
   </header>
   <section id="content">
     <form ng-submit="ctrl.evaluate()">
-      <input ng-model="stringInput" lc-focus placeholder="(\p.\q.\r.p q r) (\x.\y.x)">
+      <input id="term-input" ng-model="stringInput" ng-keyup="ctrl.tryParsing()" lc-focus ng-class="{error: !!parseError}" placeholder="(\p.\q.\r.p q r) (\x.\y.x) (\A.A) (\B.B)">
     </form>
     <div id="results">
       <div class="result" ng-repeat="result in results.slice().reverse()">

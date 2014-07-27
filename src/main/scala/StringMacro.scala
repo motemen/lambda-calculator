@@ -15,14 +15,16 @@ object StringMacro {
     "fls"  -> """\x.\y.y""",
 
     "pair" -> """\x.\y.\f.f x y""",
-    "fst"  -> """\x.\y.x""",
-    "snd"  -> """\x.\y.y""",
+    "fst"  -> """\p.p (\x.\y.x)""",
+    "snd"  -> """\p.p (\x.\y.y)""",
 
     "c0"     -> """\s.\z.z""",
     "c1"     -> """\s.\z.s z""",
     "c2"     -> """\s.\z.s (s z)""",
     "c3"     -> """\s.\z.s (s (s z))""",
     "plus"   -> """\n.\m.\s.\z.n s (m s z)""",
-    "iszero" -> """\n.n (\x.$fls) $tru"""
+    "iszero" -> """\n.n (\x.$fls) $tru""",
+
+    "Y" -> """\f. (\x.f \y. x x y) (\x.f \y. x x y)"""
   ))
 }
