@@ -33,10 +33,10 @@ trait Evaluator {
     shift(substitute(body, 0, arg), -1, 0)
   }
 
-  type EvaluationStep = List[(Term,Option[Seq[Int]])]
+  type EvaluationSteps = List[(Term,Option[Seq[Int]])]
 
-  def evaluateSteppedWithFocus(term: Term): EvaluationStep = {
-    def next(term: Term, step: EvaluationStep): EvaluationStep = {
+  def evaluateToValue(term: Term): EvaluationSteps = {
+    def next(term: Term, step: EvaluationSteps): EvaluationSteps = {
       step1(term) match {
         case None => (term, None) :: step
         case Some((term_, focus)) => next(term_, (term, Some(focus)) :: step)
@@ -44,10 +44,6 @@ trait Evaluator {
     }
 
     next(term, List()).reverse
-  }
-
-  def evaluateStepped(term: Term): List[Term] = {
-    evaluateSteppedWithFocus(term).map(_._1)
   }
 
   def step1(term: Term): Option[(Term,Seq[Int])]

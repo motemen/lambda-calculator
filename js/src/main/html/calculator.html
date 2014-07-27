@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html ng-app="LambdaCalculator">
 <head>
+<title>Lambda Calculator</title>
 <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.min.js"></script>
 <script src="../../../target/scala-2.11/js-fastopt.js"></script>
 <script>
@@ -53,7 +54,6 @@ h1 {
 }
 
 body {
-  margin: 5% 20%;
   font-size: 160%;
   font-family: monospace;
 }
@@ -63,6 +63,30 @@ input {
   font-size: inherit;
   font-family: inherit;
   width: 100%;
+}
+
+input {
+  border: none;
+  border-bottom: 2px solid #CCC;
+  outline: none;
+}
+
+input:focus {
+  border-bottom-color: #888;
+}
+
+small {
+  color: #999;
+}
+
+header {
+  margin-bottom: 1em;
+}
+
+#container {
+  margin-top: 5%;
+  margin-left: 5%;
+  width: 60%;
 }
 
 #results .result {
@@ -92,16 +116,23 @@ ul.steps li:first-child::before {
 </style>
 </head>
 <body ng-controller="CalculatorCtrl as ctrl">
-<h1>Lambda Calculator</h1>
-<form ng-submit="ctrl.evaluate()">
-  <input ng-model="stringInput" lc-focus placeholder="(\p.\q.\r.p q r) (\x.\y.x)">
-</form>
-<div id="results">
-  <div class="result" ng-repeat="result in results.slice().reverse()">
-    <ul class="steps">
-      <li ng-repeat="term in result" lc-show-term="term"></li>
-    </ul>
-  </div>
+<div id="container">
+  <header>
+    <h1>Lambda Calculator</h1>
+    <small>Strategy: Call-By-Value</small>
+  </header>
+  <section id="content">
+    <form ng-submit="ctrl.evaluate()">
+      <input ng-model="stringInput" lc-focus placeholder="(\p.\q.\r.p q r) (\x.\y.x)">
+    </form>
+    <div id="results">
+      <div class="result" ng-repeat="result in results.slice().reverse()">
+        <ul class="steps">
+          <li ng-repeat="term in result" lc-show-term="term"></li>
+        </ul>
+      </div>
+    </div>
+  </section>
 </div>
 </body>
 </html>

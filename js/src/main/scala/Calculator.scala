@@ -19,9 +19,11 @@ object Calculator {
   
   @JSExport
   def parseAndEvaluateStepped(input: String): scalajs.js.Any = {
-    Parser.parse(input) match {
+    val expandedInput = StringMacro.Prelude.replace(input)
+
+    Parser.parse(expandedInput) match {
       case Parser.Success(namedTerm, _) => {
-        val stepDisplays = CallByValueEvaluator.evaluateSteppedWithFocus(NamedTerm.removeNames(namedTerm)).map {
+        val stepDisplays = CallByValueEvaluator.evaluateToValue(NamedTerm.removeNames(namedTerm)).map {
           case (term, focusOption) => {
             NamedTerm.restoreNames(term).toDisplay(focusOption.getOrElse(Seq()))
           }
