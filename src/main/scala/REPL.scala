@@ -8,8 +8,8 @@ object REPL {
   def loop() {
     def steppedEvaluate(term: Term) {
       CallByValueEvaluator.step1(term) match {
-        case None       => ()
-        case Some(term) => {
+        case None           => ()
+        case Some((term,_)) => {
           println(s" -> $term")
           steppedEvaluate(term)
         }
@@ -17,7 +17,7 @@ object REPL {
     }
 
     while (true) {
-      val line = readLine("λ> ")
+      val line = io.StdIn.readLine("λ> ")
       Parser.parse(line) match {
         case Success(namedTerm, _) => {
           println(s"    $namedTerm")

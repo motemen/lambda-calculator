@@ -3,7 +3,7 @@ import org.scalatest._
 
 class EvaluatorSpec extends FunSuite with Matchers {
   object Evaluator extends Evaluator {
-    def step1(term: Term): Option[Term] = ???
+    def step1(term: Term) = ???
   }
 
   test ("[1 :-> λ0]1 = λ0") {
@@ -33,7 +33,7 @@ class CallByValueEvaluatorSpec extends FunSuite with Matchers {
   test ("(λx.x)(λy.y) -> λy.y") {
     CallByValueEvaluator.step1(
       App(Abs(Var(0, "x")), Abs(Var(0, "y")))
-    ) shouldBe Some(Abs(Var(0, "y")))
+    ).map(_._1) shouldBe Some(Abs(Var(0, "y")))
   }
 
   test ("(λx.λy.y x)(λy.y) -> λy.y λy'. y'") {
@@ -42,7 +42,7 @@ class CallByValueEvaluatorSpec extends FunSuite with Matchers {
         Abs(Abs(App(Var(0, "y"), Var(1, "x")))),
         Abs(Var(0, "y"))
       )
-    ) shouldBe Some(Abs(
+    ).map(_._1) shouldBe Some(Abs(
       App(
         Var(0, "y"),
         Abs(Var(0, "y"))
@@ -56,7 +56,7 @@ class CallByValueEvaluatorSpec extends FunSuite with Matchers {
       Abs(App(Var(0, "x"), Var(0, "x")))
     )
 
-    CallByValueEvaluator.step1(omega) shouldBe Some(omega)
+    CallByValueEvaluator.step1(omega).map(_._1) shouldBe Some(omega)
   }
 
   test ("(λx.λy.λz.(z y) x)(λx.x) -> λy.λz.z y (λx.x)") {
@@ -74,7 +74,7 @@ class CallByValueEvaluatorSpec extends FunSuite with Matchers {
       Abs(Var(0, "x"), "x")
     )
 
-    CallByValueEvaluator.step1(term) shouldBe Some(
+    CallByValueEvaluator.step1(term).map(_._1) shouldBe Some(
       Abs(Abs(App(App(Var(0, "z"), Var(1, "y")), Abs(Var(0, "x"), "x")), "z"), "y")
     )
   }
@@ -87,7 +87,7 @@ class CallByValueEvaluatorSpec extends FunSuite with Matchers {
     val term = NamedTerm.removeNames(namedTerm)
     term.toString shouldBe "(λλ0 (λ2)) (λλ1 (0 0))"
 
-    val steppedTerm = CallByValueEvaluator.step1(term)
+    val steppedTerm = CallByValueEvaluator.step1(term).map(_._1)
     steppedTerm.get.toString shouldBe "λ0 (λλλ1 (0 0))"
   }
 }

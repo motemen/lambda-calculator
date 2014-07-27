@@ -25,7 +25,7 @@ trait Evaluator {
   def isValue(term: Term): Boolean = {
     term match {
       case Abs(_, _) => true
-      case _                 => false
+      case _         => false
     }
   }
 
@@ -33,36 +33,43 @@ trait Evaluator {
     shift(substitute(body, 0, arg), -1, 0)
   }
 
-  def evaluateStepped(term: Term): Seq[Term] = {
-    def next(term: Term = term, steps: Seq[Term] = Seq(term)): Seq[Term] = {
+  type Focus = Seq[Int]
+  type EvaluationStep = List[(Term,Option[Focus])]
+
+  def evaluateSteppedWithFocus(term: Term): EvaluationStep = {
+    def next(term: Term = term, step: EvaluationStep = List()): EvaluationStep = {
       step1(term) match {
-        case None        => steps
-        case Some(term_) => next(term_, steps :+ term_)
+        case None => (term, None) :: step
+        case Some((term_, focus)) => next(term_, (term, Some(focus)) :: step)
       }
     }
 
-    next()
+    next().reverse
   }
 
-  def step1(term: Term): Option[Term]
+  def evaluateStepped(term: Term): List[Term] = {
+    evaluateSteppedWithFocus(term).map(_._1)
+  }
+
+  def step1(term: Term): Option[(Term,Focus)]
 }
 
 object CallByValueEvaluator extends Evaluator {
-  def step1(term: Term): Option[Term] = {
+  def step1(term: Term): Option[(Term,Focus)] = {
     term match {
       // E-AppAbs
       case App(Abs(body, _), arg) if isValue(arg) => {
-        Some(resolveApplication(body, arg))
+        Some( resolveApplication(body, arg), Seq(0) )
       }
 
       // E-App2
       case App(fun, arg) if isValue(fun) => {
-        step1(arg).map(arg_ => App(fun, arg_))
+        step1(arg).map { case (arg_, focus) => ( App(fun, arg_), focus :+ 1 ) }
       }
 
       // E-App1
       case App(fun, arg) => {
-        step1(fun).map(fun_ => App(fun_, arg))
+        step1(fun).map { case (fun_, focus) => ( App(fun_, arg), focus :+ 0 ) }
       }
 
       case _ => None

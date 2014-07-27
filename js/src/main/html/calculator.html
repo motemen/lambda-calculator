@@ -32,6 +32,10 @@ angular.module('LambdaCalculator', [])
             var e_ = angular.element('<span class="term-part"></span>');
             e.append(e_);
             term.forEach(function (t) { build(t, e_) });
+          } else if (term.focused) {
+            var e_ = angular.element('<span class="term-focused"></span>');
+            e.append(e_);
+            term.content.forEach(function (t) { build(t, e_) });
           } else {
             e.append(document.createTextNode(term));
           }
@@ -68,7 +72,7 @@ input {
 ul.steps {
   padding-left: 0;
   margin-left: 0;
-  line-height: 1.6;
+  line-height: 1.8;
   list-style: none;
 }
 
@@ -80,6 +84,10 @@ ul.steps li::before {
 
 ul.steps li:first-child::before {
   visibility: hidden;
+}
+
+.term-focused {
+  border-bottom: 4px solid #FF8;
 }
 </style>
 </head>

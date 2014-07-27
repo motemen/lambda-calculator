@@ -35,31 +35,51 @@ object NamedTerm {
 }
 
 sealed trait NamedTerm {
-  override def toString = toStringPresentation.toString
-  def toStringPresentation: StringPresentation
+  override def toString = toStringPresentation().toString
+  def toStringPresentation(focus: Seq[Int] = Seq()): StringPresentation
+
+  protected def subFocus(focus: Seq[Int], index: Int): Seq[Int] = {
+    focus match {
+      case `index` :: tail => tail
+      case _ => Seq()
+    }
+  }
 }
 
 case class NamedVar(name: String) extends NamedTerm {
-  override def toStringPresentation = AsIs(name)
+  override def toStringPresentation(focus: Seq[Int]) =
+    focus match {
+      case Seq(0) => Focused(AsIs(name))
+      case _ => AsIs(name)
+    }
 }
 
 case class NamedAbs(arg: NamedVar, body: NamedTerm) extends NamedTerm {
-  override def toStringPresentation =
-    Concat(Seq(AsIs("λ"), arg.toStringPresentation, AsIs("."), body.toStringPresentation))
+  override def toStringPresentation(focus: Seq[Int]) = {
+    val sp = Concat(Seq(AsIs("λ"), arg.toStringPresentation(subFocus(focus, 0)), AsIs("."), body.toStringPresentation(subFocus(focus, 1))))
+    focus match {
+      case Seq(0) => Focused(sp)
+      case _ => sp
+    }
+  }
 }
 
 case class NamedApp(fun: NamedTerm, arg: NamedTerm) extends NamedTerm {
-  override def toStringPresentation = {
+  override def toStringPresentation(focus: Seq[Int]) = {
     val funPresentation = fun match {
-      case NamedAbs(_,_) => Parenthesized(fun.toStringPresentation)
-      case _             => fun.toStringPresentation
+      case NamedAbs(_,_) => Parenthesized(fun.toStringPresentation(subFocus(focus, 0)))
+      case _             => fun.toStringPresentation(subFocus(focus, 0))
     }
     val argPresentation = arg match {
-      case NamedVar(_) => arg.toStringPresentation
-      case _           => Parenthesized(arg.toStringPresentation)
+      case NamedVar(_) => arg.toStringPresentation(subFocus(focus, 1))
+      case _           => Parenthesized(arg.toStringPresentation(subFocus(focus, 1)))
     }
 
-    Concat(Seq(funPresentation, AsIs(" "), argPresentation))
+    val sp = Concat(Seq(funPresentation, AsIs(" "), argPresentation))
+    focus match {
+      case Seq(0) => Focused(sp)
+      case _ => sp
+    }
   }
 }
 
@@ -96,4 +116,7 @@ case class Concat(ss: Seq[StringPresentation]) extends StringPresentation {
 }
 case class Parenthesized(s: StringPresentation) extends StringPresentation {
   override def toString = s"($s)"
+}
+case class Focused(s: StringPresentation) extends StringPresentation {
+  override def toString = s"*$s*"
 }
