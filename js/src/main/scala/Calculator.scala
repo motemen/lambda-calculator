@@ -50,19 +50,4 @@ object Calculator {
       case e: NamedTerm.UnboundVariableFound => throw new scalajs.js.JavaScriptException(e.toString)
     }
   }
-
-  @JSExport
-  def evaluationSteps(namedTerm: NamedTerm): scalajs.js.Any = {
-    try {
-      val stepDisplays = CallByValueEvaluator.evaluateToValue(NamedTerm.removeNames(namedTerm)).map {
-        case (term, focusOption) => {
-          NamedTerm.restoreNames(term).toDisplay(focusOption.getOrElse(Seq()))
-        }
-      }
-
-      scalajs.js.Array(stepDisplays.map(displayAsJs): _*)
-    } catch {
-      case e: NamedTerm.UnboundVariableFound => throw new scalajs.js.JavaScriptException(e.toString)
-    }
-  }
 }

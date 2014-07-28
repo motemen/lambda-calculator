@@ -35,6 +35,7 @@ angular.module('LambdaCalculator', [])
         session.terms.push(e.next);
       } else {
         session.atEnd = true;
+        $scope.focusInput();
       }
     };
 
@@ -45,8 +46,12 @@ angular.module('LambdaCalculator', [])
   })
   .directive('lcFocus', function () {
     return {
+      scope: {
+        focusFn: '=?lcFocus'
+      },
       link: function (scope, element) {
         element[0].focus();
+        scope.focusFn = function () { element[0].focus() };
       }
     };
   })
@@ -102,7 +107,7 @@ input#term-input {
 }
 
 input#term-input:focus {
-  border-bottom-color: #888;
+  border-bottom-color: #6D6;
 }
 
 input#term-input.error {
@@ -171,7 +176,7 @@ a.permalink {
   </header>
   <section id="content">
     <form ng-submit="ctrl.evaluate()">
-      <input id="term-input" ng-model="stringInput" ng-keyup="ctrl.tryParsing()" lc-focus ng-class="{error: !!parseError}" placeholder="(\p.\q.\r.p q r) (\x.\y.x) (\A.A) (\B.B)">
+      <input id="term-input" ng-model="stringInput" ng-keyup="ctrl.tryParsing()" lc-focus="focusInput" ng-class="{error: !!parseError}" placeholder="(\p.\q.\r.p q r) (\x.\y.x) (\A.A) (\B.B)">
     </form>
     <div id="sessions">
       <div class="session" ng-repeat="session in sessions.slice().reverse()">
