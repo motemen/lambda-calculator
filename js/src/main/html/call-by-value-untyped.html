@@ -2,8 +2,11 @@
 <html ng-app="LambdaCalculator">
 <head>
 <title>Lambda Calculator</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.min.js"></script>
+<!-- inject:js -->
 <script src="../../../target/scala-2.11/js-fastopt.js"></script>
+<!-- endinject -->
 <script>
 angular.module('LambdaCalculator', [])
   .controller('CalculatorCtrl', function ($scope) {
@@ -28,11 +31,18 @@ angular.module('LambdaCalculator', [])
       $scope.stringInput = '';
     };
 
-    this.stepNext = function (session) {
+    this.stepNext = function (session, $event) {
       var e = Calculator().evaluate1(session.terms[session.terms.length - 1]);
       if (e) {
         session.terms[session.terms.length - 1] = e.prev;
         session.terms.push(e.next);
+
+        if ($event) {
+          setTimeout(function () {
+            $event.target.blur();
+            $event.target.focus();
+          }, 0);
+        }
       } else {
         session.atEnd = true;
         $scope.focusInput();
@@ -51,7 +61,7 @@ angular.module('LambdaCalculator', [])
       },
       link: function (scope, element) {
         element[0].focus();
-        scope.focusFn = function () { element[0].focus() };
+        scope.focusFn = function () { element[0].blur(); element[0].focus() };
       }
     };
   })
@@ -161,6 +171,10 @@ ul.steps li:first-child::before {
   visibility: hidden;
 }
 
+li div.term {
+  display: inline;
+}
+
 .term-reduced {
   border-bottom: 4px solid #FF3;
 }
@@ -186,8 +200,8 @@ a.permalink {
       <div class="session" ng-repeat="session in sessions.slice().reverse()">
         <ul class="steps">
           <li class="raw-input">{{session.input}}</li>
-          <li ng-repeat="term in session.terms" lc-show-term="term"></li>
-          <li ng-if="!session.atEnd"><button ng-click="ctrl.stepNext(session)" class="step-next" lc-focus>Step next</button></li>
+          <li ng-repeat="term in session.terms"><div class="term" lc-show-term="term"></div></li>
+          <li ng-if="!session.atEnd"><button ng-click="ctrl.stepNext(session, $event)" class="step-next" lc-focus>Step next</button></li>
         </ul>
 
         <a class="permalink" href="#{{session.input}}" title="Link to this evaluation">#</a>
