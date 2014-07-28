@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html ng-app="LambdaCalculator">
+<head>
+<title>Lambda Calculator</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.min.js"></script>
+<!-- inject:js -->
+<script src="js/js-opt.js"></script>
+<!-- endinject -->
+<script>
+angular.module('LambdaCalculator', [])
+  .controller('CalculatorCtrl', function ($scope) {
+    $scope.sessions = [];
+
+    this.tryParsing = function () {
+      $scope.parseError = null;
+
+      if (!$scope.stringInput) return;
+
+      try {
+        Calculator().parse($scope.stringInput);
+      } catch (e) {
+        $scope.parseError = e;
+      }
+    };
+
+    this.evaluate = function () {
+      var term = Calculator().parse($scope.stringInput);
+      var session = { input: $scope.stringInput, terms: [ term ] };
+      $scope.sessions.push(session);
+      $scope.stringInput = '';
+    };
+
+    this.stepNext = function (session, $event) {
+      var e = Calculator().evaluate1(session.terms[session.terms.length - 1]);
+      if (e) {
+        session.terms[session.terms.length - 1] = e.prev;
+        session.terms.push(e.next);
+
+        if ($event) {
+          setTimeout(function () {
+            $event.target.blur();
+            $event.target.focus();
+          }, 0);
+        }
+      } else {
+        session.atEnd = true;
+        $scope.focusInput();
+      }
+    };
+
+    if (location.hash.length) {
+      $scope.stringInput = location.hash.replace(/^#/, '');
+      this.evaluate();
+    }
+  })
+  .directive('lcFocus', function () {
+    return {
+      scope: {
+        focusFn: '=?lcFocus'
+      },
+      link: function (scope, element) {
+        element[0].focus();
+        scope.focusFn = function () { element[0].blur(); element[0].focus() };
+      }
+    };
+  })
+  .directive('lcShowTerm', function () {
+    return {
+      scope: {
+        lcShowTerm: '&'
+      },
+      link: function (scope, element, attrs) {
+        function build (term, e) {
+          if (typeof term.toDisplay === 'function') {
+            build(term.toDisplay(), e);
+          } else if (term instanceof Array) {
+            var e_ = angular.element('<span class="term-part"></span>');
+            e.append(e_);
+            term.forEach(function (t) { build(t, e_) });
+          } else if (term.reduced) {
+            var e_ = angular.element('<span class="term-reduced"></span>');
+            e.append(e_);
+            build(term.content, e_);
+          } else {
+            e.append(document.createTextNode(term));
+          }
+        }
+
+        var term = scope.lcShowTerm();
+        build(term, element);
+      }
+    };
+  });
+</script>
+<style>
+h1 {
+  font-family: Georgia;
+}
+
+body {
+  font-size: 160%;
+  font-family: monospace;
+}
+
+input#term-input {
+  padding: 0.5em;
+  font-size: inherit;
+  font-family: inherit;
+  width: 100%;
+}
+
+input#term-input {
+  border: none;
+  border-bottom: 2px solid #CCC;
+  outline: none;
+}
+
+input#term-input:focus {
+  border-bottom-color: #6D6;
+}
+
+input#term-input.error {
+  border-bottom-color: #F77;
+}
+
+small {
+  color: #999;
+  font-size: 14pt;
+  font-family: "Helvetica Neue", sans-serif;
+  font-weight: normal;
+}
+
+header {
+  margin-bottom: 1em;
+}
+
+#container {
+  margin-top: 5%;
+  margin-left: 5%;
+  width: 60%;
+}
+
+#sessions .session {
+  margin-bottom: 2em;
+  position: relative;
+}
+
+ul.steps {
+  padding-left: 0;
+  margin-left: 0;
+  line-height: 1.8;
+  list-style: none;
+}
+
+ul.steps li {
+  margin-bottom: 0.5em;
+}
+
+ul.steps li::before {
+  color: #CCC;
+  content: "→";
+  margin-right: 0.5em;
+}
+
+ul.steps li:nth-child(2)::before {
+  content: "=";
+}
+
+ul.steps li:first-child::before {
+  visibility: hidden;
+}
+
+li div.term {
+  display: inline;
+}
+
+.term-reduced {
+  border-bottom: 4px solid #FF3;
+}
+
+a.permalink {
+  text-decoration: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+</style>
+</head>
+<body ng-controller="CalculatorCtrl as ctrl">
+<div id="container">
+  <header>
+    <h1>Lambda Calculator <small>Call-By-Value, Untyped</small></h1>
+  </header>
+  <section id="content">
+    <form ng-submit="ctrl.evaluate()">
+      <input id="term-input" ng-model="stringInput" ng-keyup="ctrl.tryParsing()" lc-focus="focusInput" ng-class="{error: !!parseError}" placeholder="(\p.\q.\r.p q r) (\x.\y.x) (\A.A) (\B.B)">
+    </form>
+    <div id="sessions">
+      <div class="session" ng-repeat="session in sessions.slice().reverse()">
+        <ul class="steps">
+          <li class="raw-input">{{session.input}}</li>
+          <li ng-repeat="term in session.terms"><div class="term" lc-show-term="term"></div></li>
+          <li ng-if="!session.atEnd"><button ng-click="ctrl.stepNext(session, $event)" class="step-next" lc-focus>Step next</button></li>
+        </ul>
+
+        <a class="permalink" href="#{{session.input}}" title="Link to this evaluation">#</a>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>
