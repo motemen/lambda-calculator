@@ -8,6 +8,10 @@
 <script src="js/js-opt.js"></script>
 <!-- endinject -->
 <script>
+window['λ'] = function (s) {
+  return window.eval(Calculator().parse(s).toSourceString());
+};
+
 angular.module('LambdaCalculator', [])
   .controller('CalculatorCtrl', function ($scope) {
     $scope.sessions = [];
@@ -171,10 +175,6 @@ ul.steps li:first-child::before {
   visibility: hidden;
 }
 
-li div.term {
-  display: inline;
-}
-
 .term-reduced {
   border-bottom: 4px solid #FF3;
 }
@@ -200,7 +200,7 @@ a.permalink {
       <div class="session" ng-repeat="session in sessions.slice().reverse()">
         <ul class="steps">
           <li class="raw-input">{{session.input}}</li>
-          <li ng-repeat="term in session.terms"><div class="term" lc-show-term="term"></div></li>
+          <li ng-repeat="term in session.terms"><span class="term" lc-show-term="term"></span></li>
           <li ng-if="!session.atEnd"><button ng-click="ctrl.stepNext(session, $event)" class="step-next" lc-focus>Step next</button></li>
         </ul>
 
