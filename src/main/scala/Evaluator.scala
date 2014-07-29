@@ -71,3 +71,19 @@ object CallByValueEvaluator extends Evaluator {
     }
   }
 }
+
+object CallByNameEvaluator extends Evaluator {
+  def step1(term: Term): Option[(Term, Seq[Int])] = {
+    term match {
+      case App(Abs(body, _), arg) => {
+        Some((resolveApplication(body, arg), Seq(0)))
+      }
+
+      case App(fun, arg) => {
+        step1(fun).map { case (fun_, focus) => ( App(fun_, arg), 0 +: focus ) }
+      }
+
+      case _ => None
+    }
+  }
+}

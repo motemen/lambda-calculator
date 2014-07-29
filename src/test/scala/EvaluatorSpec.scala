@@ -97,4 +97,22 @@ class CallByValueEvaluatorSpec extends FunSuite with Matchers {
     step._1 shouldBe App(Abs(Var(0, "x")), Abs(Var(0, "z")))
     step._2 shouldBe Seq(1, 0)
   }
+
+  test ("(λx.x)((λx.x)(λz.(λx.x)z))") {
+    val term = NamedTerm.removeNames(Parser.parse("(λx.x)((λx.x)(λz.(λx.x)z))").get)
+
+    val (term2, focus) = CallByValueEvaluator.step1(term).get
+    term2 shouldBe App(Abs(Var(0,"x"), "x"), Abs(App(Abs(Var(0, "x"), "x"), Var(0, "z")), "z"))
+    focus shouldBe Seq(1, 0)
+  }
+}
+
+class CallByNameEvaluatorSpec extends FunSuite with Matchers {
+  test ("(λx.x)((λx.x)(λz.(λx.x)z))") {
+    val term = NamedTerm.removeNames(Parser.parse("(λx.x)((λx.x)(λz.(λx.x)z))").get)
+
+    val (term2, focus) = CallByNameEvaluator.step1(term).get
+    term2 shouldBe App(Abs(Var(0,"x"), "x"), Abs(App(Abs(Var(0, "x"), "x"), Var(0, "z")), "z"))
+    focus shouldBe Seq(0)
+  }
 }

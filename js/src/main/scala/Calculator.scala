@@ -47,10 +47,24 @@ object Calculator {
     }
   }
 
+  var evaluator: Evaluator = CallByValueEvaluator
+  val evaluators = Map(
+    "call-by-value" -> CallByValueEvaluator,
+    "call-by-name"  -> CallByNameEvaluator
+  )
+
+  @JSExport
+  def getAvailableStrategies() = scalajs.js.Array("call-by-value", "call-by-name")
+  
+  @JSExport
+  def setStrategy(s: String) {
+    evaluator = evaluators(s)
+  }
+
   @JSExport
   def evaluate1(t: JSTerm): scalajs.js.Any = {
     try {
-      CallByValueEvaluator.step1(NamedTerm.removeNames(t.namedTerm)) match {
+      evaluator.step1(NamedTerm.removeNames(t.namedTerm)) match {
         case Some((nextTerm, focus)) => {
           val nextNamedTerm = NamedTerm.restoreNames(nextTerm)
           scalajs.js.Dynamic.literal(
