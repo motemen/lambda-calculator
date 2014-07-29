@@ -27,6 +27,10 @@ object StringMacro {
 
     "fix" -> """\f.(\x.f (\y.x x y)) (\x.f (\y.x x y))""",
 
-    "omega" -> """(\x.x x)(\x.x x)"""
+    "omega" -> """(\x.x x)(\x.x x)""",
+
+    "zz" -> """$pair $c0 $c0""",
+    "ss" -> """\p.$pair ($snd p) ($plus $c1 ($snd p))""",
+    "prd" -> """\m.$fst (m $ss $zz)"""
   ))
 }
