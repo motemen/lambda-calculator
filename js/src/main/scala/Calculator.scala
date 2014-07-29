@@ -7,18 +7,33 @@ import net.tokyoenvious.lambdacalc._
 object Calculator {
   case class JSTerm(namedTerm: NamedTerm, focus: Seq[Int] = Seq()) {
     @JSExport
-    def toDisplay() = displayAsJs(namedTerm.toDisplay(focus))
-  }
+    def toDisplay(): scalajs.js.Any = {
+      def rec(d: Display): scalajs.js.Any = {
+        d match {
+          case Literal(s) => s
+          case Concat(ss) =>
+            scalajs.js.Array(ss.map(rec): _*)
+          case Parenthesized(s) =>
+            scalajs.js.Array("(", rec(s), ")")
+          case Focused(s) =>
+            scalajs.js.Dynamic.literal("reduced" -> true, "content" -> rec(s))
+        }
+      }
 
-  def displayAsJs(d: Display): scalajs.js.Any = {
-    d match {
-      case Literal(s) => s
-      case Concat(ss) =>
-        scalajs.js.Array(ss.map(displayAsJs): _*)
-      case Parenthesized(s) =>
-        scalajs.js.Array("(", displayAsJs(s), ")")
-      case Focused(s) =>
-        scalajs.js.Dynamic.literal("reduced" -> true, "content" -> displayAsJs(s))
+      rec(namedTerm.toDisplay(focus))
+    }
+
+    @JSExport
+    def toSourceString(): String = {
+      def rec(nt: NamedTerm): String = {
+        nt match {
+          case NamedVar(x) => x
+          case NamedAbs(NamedVar(x),body) => s"(function ($x) { return ${rec(body)} })"
+          case NamedApp(fun, arg) => s"${rec(fun)}(${rec(arg)})"
+        }
+      }
+
+      rec(namedTerm)
     }
   }
 
