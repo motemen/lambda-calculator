@@ -20,7 +20,7 @@ var paths = {
         fast: 'target/scala-2.11/js-fastopt.js',
         full: 'target/scala-2.11/js-opt.js'
     },
-    html: 'src/main/html/call-by-value-untyped.html'
+    html: 'src/main/html/untyped.html'
 }
 
 function buildHTML(js, dir) {
