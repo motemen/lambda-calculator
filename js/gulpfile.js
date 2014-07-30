@@ -1,7 +1,9 @@
 var gulp        = require('gulp'),
     $           = require('gulp-load-plugins')(),
     spawn       = require('child_process').spawn,
-    browserSync = require('browser-sync');
+    browserSync = require('browser-sync'),
+    debounce    = require('lodash.debounce'),
+    del         = require('del');
 
 function sbt(args, done) {
     var sbt = spawn('sbt', args, { cwd: __dirname + '/..', stdio: 'inherit' });
@@ -34,17 +36,28 @@ gulp.task('html', function () {
 });
 
 gulp.task('serve', [ 'html' ], function (done) {
-    browserSync({ server: { baseDir: '.tmp' } });
+    browserSync({
+        notify: false,
+        server: { baseDir: '.tmp' }
+    });
 
     sbt([ 'project js', '~fastOptJS' ]);
-    gulp.watch('target/scala-2.11/js-fastopt.js', { debounceDelay: 2000 }, [ 'html' ]);
+    gulp.watch(
+        paths.js.fast,
+        debounce(function () { gulp.start('html') }, 1000)
+    );
+
+    gulp.watch(paths.html, ['html']);
+
     gulp.watch('.tmp/**', browserSync.reload);
 });
 
 gulp.task('stage', [ 'sbt:fullOptJS' ], function () {
-    return buildHTML(paths.js.full, 'publish');
+    return buildHTML(paths.js.full, 'dist');
 });
 
 gulp.task('sbt:fullOptJS', function (done) {
     sbt(['js/fullOptJS'], done);
 });
+
+gulp.task('clean', del.bind(null, ['.tmp', 'dist']));
