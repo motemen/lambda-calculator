@@ -2,7 +2,6 @@
 <html ng-app="LambdaCalculator">
 <head>
 <title>Lambda Calculator</title>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.min.js"></script>
 <!-- inject:js -->
 <script src="js/js-opt.js"></script>
@@ -13,7 +12,28 @@ window['λ'] = function (s) {
 };
 
 angular.module('LambdaCalculator', [])
-  .controller('CalculatorCtrl', function ($scope) {
+  .config(function ($locationProvider) {
+    $locationProvider.html5Mode(true)
+  })
+  .controller('CalculatorCtrl', function ($scope, $location) {
+    $scope.availableStrategies = Calculator().getAvailableStrategies();
+    var defaultStrategy = $scope.strategy = $scope.availableStrategies[0];
+
+    $scope.$watch(
+      function () { return $location.search().s },
+      function (locationS) {
+        $scope.strategy = locationS;
+      }
+    );
+    $scope.$watch('strategy', function (newStrategy) {
+      try {
+        Calculator().setStrategy(newStrategy);
+        $location.search('s', newStrategy);
+      } catch (e) {
+        $scope.strategy = defaultStrategy;
+      }
+    });
+
     $scope.sessions = [];
 
     this.tryParsing = function () {
@@ -53,8 +73,9 @@ angular.module('LambdaCalculator', [])
       }
     };
 
-    if (location.hash.length) {
-      $scope.stringInput = location.hash.replace(/^#/, '');
+    // for the first time only
+    if ($location.hash().length) {
+      $scope.stringInput = $location.hash();
       this.evaluate();
     }
   })
@@ -128,6 +149,10 @@ input#term-input.error {
   border-bottom-color: #F77;
 }
 
+select {
+  font-size: inherit;
+}
+
 small {
   color: #999;
   font-size: 14pt;
@@ -190,7 +215,7 @@ a.permalink {
 <body ng-controller="CalculatorCtrl as ctrl">
 <div id="container">
   <header>
-    <h1>Lambda Calculator <small>Call-By-Value, Untyped</small></h1>
+    <h1>Lambda Calculator <small>untyped, <select class="evaluation-strategy" ng-model="strategy" ng-options="v for v in availableStrategies"></select></small></h1>
   </header>
   <section id="content">
     <form ng-submit="ctrl.evaluate()">
@@ -204,7 +229,7 @@ a.permalink {
           <li ng-if="!session.atEnd"><button ng-click="ctrl.stepNext(session, $event)" class="step-next" lc-focus>Step next</button></li>
         </ul>
 
-        <a class="permalink" href="#{{session.input}}" title="Link to this evaluation">#</a>
+        <a class="permalink" href="?s={{strategy}}#{{session.input}}" title="Link to this evaluation">#</a>
       </div>
     </div>
   </section>
