@@ -4,11 +4,17 @@ version := "1.0"
 
 scalaVersion := "2.11.0"
 
-lazy val core = project in file(".") dependsOn(scalaParserCombinators) settings(
-  libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.0" % "test"
-)
+resolvers += Resolver.url(
+  "bintray-scala-js-releases",
+    url("http://dl.bintray.com/content/scala-js/scala-js-releases"))(
+        Resolver.ivyStylePatterns)
 
-lazy val scalaParserCombinators = project in file("modules/scala-parser-combinators")
+lazy val core = project in file(".") settings(
+  libraryDependencies ++= Seq(
+    "org.scalatest" % "scalatest_2.11" % "2.2.0" % "test",
+    "org.scalajs" % "scala-parser-combinators_sjs0.5_2.11" % "1.0.1"
+  )
+)
 
 lazy val js = project in file("js") dependsOn(core) settings(
   scalaVersion <<= scalaVersion in core,

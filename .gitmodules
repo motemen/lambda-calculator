@@ -1,4 +1,0 @@
-[submodule "modules/scala-parser-combinators"]
-	path = modules/scala-parser-combinators
-	url = https://github.com/sjrd/scala-parser-combinators
-	branch = scalajs
