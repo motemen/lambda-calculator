@@ -12,7 +12,7 @@ resolvers += Resolver.url(
 lazy val core = project in file(".") settings(
   libraryDependencies ++= Seq(
     "org.scalatest" % "scalatest_2.11" % "2.2.0" % "test",
-    "org.scalajs" % "scala-parser-combinators_sjs0.5_2.11" % "1.0.1"
+    "org.scalajs" %%% "scala-parser-combinators" % "1.0.1"
   )
 )
 
